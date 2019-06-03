@@ -8,7 +8,7 @@ pipeline{
   stages{
     stage("Wheather"){
       steps{
-        sh "apt-get install curl"
+        sh "apt-get update && apt-get install curl"
         sh "curl wttr.in"
       }
     }
