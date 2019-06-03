@@ -1,4 +1,4 @@
-FROM rust-base as builder
+FROM 3.8.8.67/rust-base as builder
 RUN rustup default nightly-2018-04-04
 WORKDIR /app
 ADD . .
