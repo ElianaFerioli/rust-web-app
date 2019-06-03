@@ -11,5 +11,10 @@ pipeline{
         sh "whoami"
       }
     }
+    stage("Wheather"){
+      steps{
+        sh "curl wttr.in"
+      }
+    }
   }
 }
