@@ -6,5 +6,10 @@ pipeline{
         echo "Hola!!"
       }
     }
+    stage("Stage myself"){
+      steps{
+        sh "whoami"
+      }
+    }
   }
 }
