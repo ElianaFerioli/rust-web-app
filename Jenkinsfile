@@ -1,7 +1,7 @@
 pipeline{
   environment{
 	REGISTRY = credentials('REGISTRY')		
-	REGISTRY_HOST = 3.8.8.67
+	REGISTRY_HOST = '3.8.8.67'
   }
   agent any
   stages{
