@@ -7,9 +7,15 @@ pipeline{
     }
   }
   stages{
-    stage("Wheather"){
+    stage("check curl"){
+      when {branch 'master'}
+        steps{
+          sh "curl wttr.in"
+        }
+    }
+    stage('check the weather'){
       steps{
-        sh "curl wttr.in"
+         sh 'curl wttr.in'
       }
     }
   }
