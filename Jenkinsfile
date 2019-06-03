@@ -2,13 +2,13 @@ pipeline{
   agent {
     docker { 
       image 'ubuntu:latest'
-      args '-c apt-get install curl'
     
     }
   }
   stages{
     stage("Wheather"){
       steps{
+        sh "apt-get install curl"
         sh "curl wttr.in"
       }
     }
