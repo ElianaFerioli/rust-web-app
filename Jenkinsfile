@@ -15,7 +15,7 @@ pipeline{
     AWS_STAGING_DEFAULT_REGION = 'eu-west-2'
     AWS_STAGING_CLUSTER_NAME= 'cluster-of-User4'
     DOCKER_PF_WEB = "web-port-forward-smoke-test"
-    DOCKER_PF_WEB = "db-port-forward-test"
+    DOCKER_PF_DB = "db-port-forward-test"
   }
   agent any
   stages{
