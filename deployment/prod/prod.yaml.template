@@ -67,7 +67,7 @@ spec:
       imagePullSecrets:
       - name: private-registry
       containers:
-      - image: 3.8.8.67/web:latest
+      - image: 3.8.8.67/web:{{VERSION}}
         name: web
         env:
         - name: DATABASE_URL
@@ -93,4 +93,3 @@ spec:
   selector:
     app: web
     track: stable
-  type: NodePort

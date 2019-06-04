@@ -24,7 +24,7 @@ pipeline{
   }
   agent any
   stages{
-    /*stage("Docker registry login"){
+    stage("Docker registry login"){
         steps{
           sh 'docker login ${REGISTRY_HOST}\
 		  -u ${REGISTRY_USR} -p ${REGISTRY_PSW}'
@@ -35,7 +35,7 @@ pipeline{
   			sh 'docker build -t ${DOCKER_IMAGE} -f dockerfiles/Dockerfile .'
   		}
   	}
-  	stage('Unit test'){
+  	/*stage('Unit test'){
   		agent{
   			docker{
   				image '${REGISTRY_HOST}/rust-base'
@@ -113,7 +113,7 @@ pipeline{
       steps {
           sh 'python3 integration_tests/integration_e2e_test.py' 
       }
-    }
+    }*/
     stage('Docker Push') {
       steps {
           sh 'docker tag \
@@ -125,6 +125,7 @@ pipeline{
               ${REGISTRY_HOST}/${DOCKER_IMAGE}:${BUILD_NUMBER}'
       }
     }  
+    /*
     stage('Connect to K8S Staging') {
         steps {
             sh 'docker run -v ${HOME}:/root \
@@ -279,6 +280,7 @@ pipeline{
                 }
             }                        
         steps {
+            sh "sed 's@{{VERSION}}@$BUILD_NUMBER@g' deployment/prod/prod.yaml.template > deployment/prod/prod.yaml"
             sh 'kubectl apply -f deployment/prod/prod.yaml'
         }                
     }
