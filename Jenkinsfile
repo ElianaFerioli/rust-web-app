@@ -20,6 +20,7 @@ pipeline{
     AWS_PROD = credentials('AWS')
     AWS_PROD_DEFAULT_REGION = 'eu-west-2'
     AWS_PROD_CLUSTER_NAME= 'cluster-of-User4'
+    DOCKER_PF_DB_PROD = 'db-port-forward-prod'
   }
   agent any
   stages{
@@ -262,7 +263,27 @@ pipeline{
         }                
     }
         
-        
+    stage('Production: Port Forwarding') {                     
+        steps {
+            script {
+                PODNAME = sh(script: "docker run -v ${HOME}/.kube:/root/.kube \
+                    -e AWS_ACCESS_KEY_ID=${AWS_PROD_USR} \
+                    -e AWS_SECRET_ACCESS_KEY=${AWS_PROD_PSW} \
+                    mendrugory/ekskubectl kubectl get pods -l app=db \
+                    -o jsonpath='{.items[0].metadata.name}'", returnStdout: true)
+                echo "The pod is ${PODNAME}"                                        
+            sh(script: "docker run --name ${DOCKER_PF_DB_PROD} \
+                -v ${HOME}/.kube:/root/.kube -p 3305:3306 --rm \
+                -v /var/run/docker.sock:/var/run/docker.sock    \
+                -e AWS_ACCESS_KEY_ID=${AWS_PROD_USR} \
+                -e AWS_SECRET_ACCESS_KEY=${AWS_PROD_PSW} \
+                mendrugory/ekskubectl \
+                kubectl port-forward \
+                --address 0.0.0.0 ${PODNAME} 3305:3306 &")
+            sh 'sleep 10'
+            }
+        }
+    }    
     
   }
   
@@ -275,7 +296,7 @@ pipeline{
             -e AWS_ACCESS_KEY_ID=${AWS_STAGING_USR} \
             -e AWS_SECRET_ACCESS_KEY=${AWS_STAGING_PSW} \
             mendrugory/ekskubectl \
-            kubectl delete po ${K8S_IT_POD} -n staging'
+            kubectl delete po ${K8S_IT_POD} -n staging || true'
   	}
    success {
         slackSend (
