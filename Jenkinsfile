@@ -143,7 +143,7 @@ pipeline{
       }                        
       steps {
           sh 'kubectl apply -f deployment/staging/staging.yaml'
-          sh 'kubectl apply -f deployment/staging/integration_test.yaml'
+          sh 'kubectl apply -f deployment/staging/integration_tests.yaml'
           
       }                
     }
