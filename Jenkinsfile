@@ -219,7 +219,7 @@ pipeline{
         }
         steps {
                 sh "kubectl exec -n staging -it ${K8S_IT_POD} \
-                    -- python3 integration_tests/integration_test.py"
+                    -- python3 integration_tests/integration_tests.py"
         }
     }
     /*stage('Staging: Integration Test - E2E') {
