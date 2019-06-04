@@ -112,7 +112,7 @@ data:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: integration-test
+  name: integration-tests
   namespace: staging
   labels:
     app: integration-tests

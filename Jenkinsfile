@@ -16,7 +16,7 @@ pipeline{
     AWS_STAGING_CLUSTER_NAME= 'cluster-of-User4'
     DOCKER_PF_WEB = "web-port-forward-smoke-test"
     DOCKER_PF_DB = "db-port-forward-test"
-    K8S_IT_POD = "integration-test"
+    K8S_IT_POD = "integration-tests"
   }
   agent any
   stages{
