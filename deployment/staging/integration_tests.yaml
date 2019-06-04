@@ -4,7 +4,7 @@ metadata:
   name: integration-tests
   namespace: staging
 data:
-  integration_test.py: |
+  integration_tests.py: |
     import sys, os
     import requests
     import json
