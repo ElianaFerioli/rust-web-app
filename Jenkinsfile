@@ -20,7 +20,7 @@ pipeline{
 		  -u ${REGISTRY_USR} -p ${REGISTRY_PSW}'
         }
     }
-  	stage('Unit test'){
+  	/*stage('Unit test'){
   		agent{
   			docker{
   				image '${REGISTRY_HOST}/rust-base'
@@ -30,12 +30,12 @@ pipeline{
   			sh 'rustup default nightly-2018-04-04'
   			sh 'cargo test'
   		}
-  	}
-  	stage('Docker Build') {
+  	}*/
+  	/*stage('Docker Build') {
   		steps {
   			sh 'docker build -t ${DOCKER_IMAGE} -f dockerfiles/Dockerfile .'
   		}
-  	}
+  	}*/
   	stage('Docker Up') {
   		steps {
   			sh 'docker network create --driver=bridge \
