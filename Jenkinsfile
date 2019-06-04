@@ -66,7 +66,7 @@ pipeline{
   			}
  		}
   }
-  post {
+  /*post {
   	always {
   		sh 'docker kill ${DOCKER_IMAGE} ${DB_IMAGE} || true'
   		sh 'docker network rm ${DOCKER_NETWORK_NAME} || true'
@@ -87,5 +87,5 @@ pipeline{
             color: '#FF0000', 
             message: "FAILED: Job '${JOB_NAME} [${BUILD_NUMBER}]' (${BUILD_URL})")
     }
-  } 
-//}
+  } */
+}
