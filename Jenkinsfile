@@ -21,6 +21,7 @@ pipeline{
     AWS_PROD_DEFAULT_REGION = 'eu-west-2'
     AWS_PROD_CLUSTER_NAME= 'cluster-of-User4'
     DOCKER_PF_DB_PROD = 'db-port-forward-prod'
+    LB_DOMAIN_NAME = "http://b4819706-default-ingress-e8c7-1452339041.eu-west-2.elb.amazonaws.com"
   }
   agent any
   stages{
@@ -250,27 +251,7 @@ pipeline{
                 update-kubeconfig --name ${AWS_PROD_CLUSTER_NAME}'
         }
     }
-    
-    stage('Friendly Reminder Authorization before Deploying') {
-        steps {
-            slackSend (channel: "${SLACK_CHANNEL}", 
-                teamDomain: "${SLACK_TEAM_DOMAIN}", 
-                tokenCredentialId: 'SLACK_TOKEN_ID', 
-                color: '#E8EA25', 
-                message: "Job '${JOB_NAME} [${BUILD_NUMBER}]' is waiting for authorization before deploying to production. (${BUILD_URL})")
-        }
-    }
-    stage('Authorization before Deploying') {
-        input {
-            message "Let's Deploy !!!"
-            ok "Yeaaahh !!!"
-        } 
-        steps {
-            echo "Authorization before Deploying"
-        } 
-    }
-    
-    stage('Deploy to Prodution') {
+    stage('Deploy Canary to Prodution') {
         agent {
             docker {
                 image 'mendrugory/ekskubectl'
@@ -278,11 +259,47 @@ pipeline{
                     -e AWS_ACCESS_KEY_ID=${AWS_PROD_USR} \
                     -e AWS_SECRET_ACCESS_KEY=${AWS_PROD_PSW}'
                 }
-            }                        
+            }
         steps {
-            sh "sed 's@{{VERSION}}@$BUILD_NUMBER@g' deployment/prod/prod.yaml.template > deployment/prod/prod.yaml"
-            sh 'kubectl apply -f deployment/prod/prod.yaml'
+            sh "sed 's@{{VERSION}}@$BUILD_NUMBER@g' deployment/prod/canary.yaml.template > deployment/prod/canary.yaml"
+            sh 'kubectl apply -f deployment/prod/canary.yaml'
+            sh 'kubectl delete -f deployment/prod/proxy.yaml || true'
+            sh 'sleep 5'
+            sh 'kubectl apply -f deployment/prod/canary-proxy.yaml'
+        }
+    }
+    
+    stage('Canary Testing') {
+      steps {
+        script{
+          sh 'sleep 20;' 
+          for (int i = 0; i < 10; i++) {
+            echo "Canary Test Request ${i} ..."
+              sh 'docker run --net=host --rm byrnedo/alpine-curl --fail http://${LB_DOMAIN_NAME}/health'
+              sh 'sleep 1;'
+          }
         }                
+      }       
+    }
+    
+    stage('Deploy to Prodution') {
+      agent {
+        docker {
+          image 'mendrugory/ekskubectl'
+          args '-v ${HOME}/.kube:/root/.kube \
+            -e AWS_ACCESS_KEY_ID=${AWS_PROD_USR} \
+            -e AWS_SECRET_ACCESS_KEY=${AWS_PROD_PSW}'
+        }
+      }            
+      steps {
+        sh 'kubectl delete -f deployment/prod/canary-proxy.yaml || true'
+        sh 'kubectl delete -f deployment/prod/canary.yaml || true'
+        sh 'kubectl delete -f deployment/prod/web.yaml || true'
+        sh 'sleep 5'
+        sh "sed 's@{{VERSION}}@$BUILD_NUMBER@g' deployment/prod/web.yaml.template > deployment/prod/web.yaml"
+        sh 'kubectl apply -f deployment/prod/web.yaml'
+        sh 'kubectl apply -f deployment/prod/proxy.yaml'
+      }        
     }
         
     stage('Production: Port Forwarding') {                     
@@ -318,6 +335,8 @@ pipeline{
             sh 'diesel migration run'
         }
     }   
+    
+    
     
   }
   
