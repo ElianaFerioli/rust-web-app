@@ -191,6 +191,7 @@ pipeline{
                   --address 0.0.0.0 -n staging ${PODNAME} 3306:3306 &")
           }
      }
+    }
      stage('Staging: DB Migration') {
         agent {
             dockerfile {
