@@ -16,6 +16,7 @@ pipeline{
     AWS_STAGING_CLUSTER_NAME= 'cluster-of-User4'
     DOCKER_PF_WEB = "web-port-forward-smoke-test"
     DOCKER_PF_DB = "db-port-forward-test"
+    K8S_IT_POD = "integration-test"
   }
   agent any
   stages{
@@ -142,9 +143,11 @@ pipeline{
       }                        
       steps {
           sh 'kubectl apply -f deployment/staging/staging.yaml'
+          sh 'kubectl apply -f deployment/staging/integration_test.yaml'
+          
       }                
     }
-    stage('Staging: Port Forwarding') {
+    /*stage('Staging: Port Forwarding') {
         steps {
             script {
                 PODNAME = sh(script: "docker run -v ${HOME}/.kube:/root/.kube \
@@ -170,7 +173,7 @@ pipeline{
         steps {
             sh 'docker run --net=host --rm byrnedo/alpine-curl --fail -I http://0.0.0.0:8888/health'
         }
-    }
+    }*/
        
     stage('Staging: PF DB Migration') {    
       steps {
@@ -206,22 +209,20 @@ pipeline{
     }     
     
     stage('Staging: Integration Test') {
-      agent {
-          dockerfile {
-              filename 'dockerfiles/python.dockerfile' 
-              args '--net=host \
-                  -e WEB_HOST=0.0.0.0:8888 \
-                  -e DB_HOST=0.0.0.0 \
-                  -e DB_DATABASE=${MYSQL_DATABASE} \
-                  -e DB_USER=${MYSQL_USER} \
-                  -e DB_PASSWORD=${MYSQL_PASSWORD}'
-              }
-          }
-      steps {
-          sh 'python3 integration_tests/integration_test.py' 
-      }                
+        agent {
+            docker {
+                image 'mendrugory/ekskubectl'
+                args '-v ${HOME}/.kube:/root/.kube \
+                -e AWS_ACCESS_KEY_ID=${AWS_STAGING_USR} \
+                -e AWS_SECRET_ACCESS_KEY=${AWS_STAGING_PSW}'
+            }
+        }
+        steps {
+                sh "kubectl exec -n staging -it ${K8S_IT_POD} \
+                    -- python3 integration_tests/integration_test.py"
+        }
     }
-    stage('Staging: Integration Test - E2E') {
+    /*stage('Staging: Integration Test - E2E') {
         agent {
             dockerfile {
                 filename 'dockerfiles/python.dockerfile' 
@@ -232,7 +233,7 @@ pipeline{
         steps {
             sh 'python3 integration_tests/integration_e2e_test.py' 
         }
-    }
+    }*/
     
     
     
@@ -244,6 +245,12 @@ pipeline{
   	always {
   		sh 'docker kill ${DOCKER_IMAGE} ${DB_IMAGE} ${DOCKER_PF_WEB} ${DOCKER_PF_DB} || true'
   		sh 'docker network rm ${DOCKER_NETWORK_NAME} || true'
+      sh 'docker run -v ${HOME}/.kube:/root/.kube \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -e AWS_ACCESS_KEY_ID=${AWS_STAGING_USR} \
+            -e AWS_SECRET_ACCESS_KEY=${AWS_STAGING_PSW} \
+            mendrugory/ekskubectl \
+            kubectl delete po ${K8S_IT_POD} -n staging'  
   	}
    success {
         slackSend (
