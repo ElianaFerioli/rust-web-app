@@ -120,7 +120,7 @@ spec:
   imagePullSecrets:
   - name: private-registry    
   containers:
-  - image: 34.253.63.143/python-base
+  - image: 3.8.8.67/python-base
     command: ['/bin/sleep', '60']
     name: integration-tests
     volumeMounts:
