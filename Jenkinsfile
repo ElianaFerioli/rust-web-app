@@ -21,7 +21,7 @@ pipeline{
     AWS_PROD_DEFAULT_REGION = 'eu-west-2'
     AWS_PROD_CLUSTER_NAME= 'cluster-of-User4'
     DOCKER_PF_DB_PROD = 'db-port-forward-prod'
-    LB_DOMAIN_NAME = "http://b4819706-default-ingress-e8c7-1452339041.eu-west-2.elb.amazonaws.com"
+    LB_DOMAIN_NAME = "b4819706-default-ingress-e8c7-1452339041.eu-west-2.elb.amazonaws.com"
   }
   agent any
   stages{
